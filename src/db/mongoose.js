@@ -12,15 +12,4 @@ const User = mongoose.model('User', {
     age: {
         type: Number
     }
-})
-
-const Me = new User({
-    name: 'Parag',
-    age: 26
-})
-
-Me.save().then(me => {
-    console.log(me)
-}, (error) => {
-    console.log(error)
-})
+});
