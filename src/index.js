@@ -86,44 +86,42 @@ app.delete('/users/:id', (req, res) => {
 // -------------------------- Task routes -----------------------//
 
 // Create Task - post request
-app.post('/tasks', (req, res) => {
+app.post('/tasks', async (req, res) => {
     const task = new Task(req.body);
 
-    task.save()
-        .then((task) => {
-            res.status(201).send(task);
-        })
-        .catch((error) => {
-            res.status(400).send(error);
-        })
-
+    try {
+        await task.save();
+        res.status(201).send(task);
+    } catch (e) {
+        res.status(400).send(e);
+    }
 })
 
 // Read task - Get request
-app.get('/tasks', (req, res) => {
-    Task.find({})
-        .then(tasks => {
-            res.status(200).send(tasks);
-        })
-        .catch(error => {
-            console.log(error);
-        })
+app.get('/tasks', async (req, res) => {
+
+    try {
+        const tasks = await Task.find({});
+        res.status(200).send(tasks);
+    } catch (e) {
+        res.status(400).send(e);
+    }
 });
 
 // Read task by id - Get request
-app.get('/tasks/:id', (req, res) => {
-    Task.findById({
-            _id: req.params.id
-        })
-        .then(task => {
-            if (task) {
-                return res.status(404).send('Task not found')
-            }
-            res.status(200).send(task);
-        })
-        .catch(error => {
-            res.status(500).send(error);         
-        })
+app.get('/tasks/:id', async (req, res) => {
+    const _id =  req.params.id;
+
+    try {
+        const task = await Task.findById(_id);
+
+        if (!task) {
+            res.status(404).send();
+        }
+        res.status(200).send(task);
+    } catch (e) {
+        res.status(500).send(e);         
+    }
 });
 
 // Find task by id and update - patch request
