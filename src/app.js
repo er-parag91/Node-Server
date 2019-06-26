@@ -7,12 +7,24 @@ MongoClient.connect('mongodb://127.0.0.1:27017', { useNewUrlParser: true }, (err
     }
     console.log('Connected Successfully');
     const db = client.db('Task-Manager');
-    db.collection('tasks').updateOne({
-        _id: new ObjectId("5d12ad0f3feb51061215e025")
+    // db.collection('tasks').updateOne({
+    //     _id: new ObjectId("5d12ad0f3feb51061215e025")
+    // }, {
+    //     $set: {
+    //         description: 'Book a Rental car',
+    //         completed: true
+    //     }
+    // }).then((result) => {
+    //     console.log(result)
+    // }, (err) => {
+    //     console.log(err)
+    // })
+
+    db.collection('users').updateOne({
+        name: 'Pragnesh'
     }, {
-        $set: {
-            description: 'Book a Rental car',
-            completed: true
+        $inc: {
+            age: 1
         }
     }).then((result) => {
         console.log(result)
