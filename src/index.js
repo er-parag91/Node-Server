@@ -21,19 +21,19 @@ app.post('/users', async (req, res) => {
         await user.save();
         res.status(201).send(user);
     } catch(e) {
-        res.status(400).send(error);
+        res.status(400).send(e);
     }
 })
 
 // Read users - Get request
-app.get('/users', (req, res) => {
-    User.find({})
-        .then(users => {
-            res.status(200).send(users);
-        })
-        .catch(error => {
-            res.status(400).send(error);
-        })
+app.get('/users', async (req, res) => {
+
+    try {
+        const user = await User.find({});
+        res.status(200).send(users);
+    } catch(e) {
+        res.status(400).send(e);
+    }
 });
 
 // Read user by id - Get request
