@@ -76,16 +76,27 @@ MongoClient.connect('mongodb://127.0.0.1:27017', { useNewUrlParser: true }, (err
 
         console.log(result)
     })
-    
+
     // find one document based on query
     db.collection('tasks').findOne({
         _id: new ObjectId("5d12ad0f3feb51061215e025")
     }, (error, result) => {
         if (error) {
-            console.log('Unable to fetch')
+            return console.log('Unable to fetch')
         }
 
         console.log(result)
+    })
+
+    // find documents as an array
+    db.collection('tasks').find({
+        completed: true
+    }).toArray((err, result) => {
+        if (err) {
+            console.log('Unable to fetch')            
+        }
+        return console.log(result)
+
     })
 
 });
