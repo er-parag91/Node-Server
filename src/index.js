@@ -33,7 +33,20 @@ app.get('/users', (req, res) => {
             res.status(200).send(users);
         })
         .catch(error => {
-            console.log(error);
+            res.status(400).send(error);
+        })
+});
+
+// Read user by id - Get request
+app.get('/users/:id', (req, res) => {
+    User.findOne({
+            _id: req.params.id
+        })
+        .then(user => {
+            res.status(200).send(user);
+        })
+        .catch(error => {
+            res.status(400).send(error);         
         })
 });
 
@@ -65,6 +78,18 @@ app.get('/tasks', (req, res) => {
         })
 });
 
+// Read task by id - Get request
+app.get('/tasks/:id', (req, res) => {
+    Task.findOne({
+            _id: req.params.id
+        })
+        .then(task => {
+            res.status(200).send(task);
+        })
+        .catch(error => {
+            res.status(400).send(error);         
+        })
+});
 
 // Listener
 app.listen(port, () => {
