@@ -9,23 +9,25 @@ mongoose.connect('mongodb://127.0.0.1:27017/task-manager-api', {
 const User = mongoose.model('User', {
     name: {
         type: String,
-        required: true
-    },
-    age: {
-        type: Number,
         required: true,
-        validate(value){
-            if (value < 0) {
-                throw new Error('Age must be positive integer');
-            }
-        }
+        trim: true
     },
     email: {
         type: String,
         required: true,
+        trim: true,
         validate(value) {
             if (!validator.isEmail(value)) {
                 throw new Error('Email is not valid');
+            }
+        }
+    },
+    age: {
+        type: Number,
+        default: 0,
+        validate(value){
+            if (value < 0) {
+                throw new Error('Age must be positive integer');
             }
         }
     }
@@ -34,16 +36,18 @@ const User = mongoose.model('User', {
 const Task = mongoose.model('Task', {
     description: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     completed: {
-        type: Boolean
+        type: Boolean,
+        default: false
     }
 });
 
 
  const Me = new User({
-     name: 'Pragnesh',
+     name: '        Pragnesh          ',
      age: 27,
      email: 'pragnesh2559@gmail.com'
  })
