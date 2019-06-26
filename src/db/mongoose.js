@@ -13,3 +13,23 @@ const User = mongoose.model('User', {
         type: Number
     }
 });
+
+const Task = mongoose.model('Task', {
+    description: {
+        type: String
+    },
+    completed: {
+        type: Boolean
+    }
+});
+
+const task = new Task({
+    description: 'Buy a grocery',
+    completed: false
+});
+
+task.save().then(() => {
+    console.log(task);
+}, err => {
+    console.log(err);
+});
