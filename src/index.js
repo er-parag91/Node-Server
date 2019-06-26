@@ -39,7 +39,7 @@ app.get('/users', (req, res) => {
 
 // Read user by id - Get request
 app.get('/users/:id', (req, res) => {
-    User.findOne({
+    User.findById({
             _id: req.params.id
         })
         .then(user => {
@@ -80,7 +80,7 @@ app.get('/tasks', (req, res) => {
 
 // Read task by id - Get request
 app.get('/tasks/:id', (req, res) => {
-    Task.findOne({
+    Task.findById({
             _id: req.params.id
         })
         .then(task => {
