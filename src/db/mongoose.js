@@ -30,14 +30,3 @@ const Task = mongoose.model('Task', {
         type: Boolean
     }
 });
-
-const Me = new User({
-    name: 'Pragnesh',
-    age: -5
-})
-
-Me.save().then(() => {
-    console.log(Me)
-}, (error) => {
-    console.log(error)
-})
