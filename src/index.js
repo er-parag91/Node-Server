@@ -79,17 +79,16 @@ app.patch('/users/:id', async (req, res) => {
 
 // Find user by id and delete - delete request
 app.delete('/users/:id', async (req, res) => {
-    const _id = req.params.id;
 
     try {
-        const user = await User.findByIdAndDelete(_id);
-
+        const user = await User.findByIdAndDelete(req.params.id);
         if (!user) {
-            res.status(404).send();
+            res.status(404).send({ error: 'Invalid delete operation'});
         }
         res.status(200).send(user);
+        
     } catch (e) {
-        res.status(500).send(error);
+        res.status(400).send(error);
     }
 });
 
@@ -158,17 +157,18 @@ app.patch('/tasks/:id', async (req, res) => {
 });
 
 // Find task by id and delete - delete request
-app.delete('/tasks/:id', (req, res) => {
-    Task.findByIdAndDelete({ _id: req.params.id})
-    .then((task) => {
+app.delete('/tasks/:id', async (req, res) => {
+
+    try {
+        const task = await Task.findByIdAndDelete(req.params.id);
         if (!task) {
-            res.status(400).send('Error ocuured while deleting');
+            res.status(404).send({ error: 'Invalid delete operation'});
         }
         res.status(200).send(task);
-    })
-    .catch((error) => {
-        res.status(500).send(error);
-    })
+        
+    } catch (e) {
+        res.status(400).send(error);
+    }
 }) 
 
 
