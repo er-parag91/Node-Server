@@ -55,30 +55,42 @@ app.get('/users/:id', async (req, res) => {
 
 
 // Find user by id and update - patch request
-app.patch('/users/:id', (req, res) => {
-    User.findByIdAndUpdate({ _id: req.params.id}, {
-        age: 11
-    })
-    .then((user) => {
-        res.status(201).send(user);
-    })
-    .catch((error) => {
-        res.status(500).send(error);
-    })
+app.patch('/users/:id', async (req, res) => {
+
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ['name', 'email', 'password', 'age'];
+
+    const isValidOperation = updates.every(update =>  allowedUpdates.includes(update));
+
+    if (!isValidOperation) {
+        return res.status(400).send({ error: 'Not valid updates'});
+    }
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+
+        if (!user) {
+            res.status(404).send();
+        }
+        res.status(200).send(user);
+    } catch (e) {
+        res.status(400).send(e);
+    }
 }) 
 
 // Find user by id and delete - delete request
-app.delete('/users/:id', (req, res) => {
-    User.findByIdAndDelete({ _id: req.params.id})
-    .then((user) => {
+app.delete('/users/:id', async (req, res) => {
+    const _id = req.params.id;
+
+    try {
+        const user = await User.findByIdAndDelete(_id);
+
         if (!user) {
-            res.status(400).send('Error ocuured while deleting');
+            res.status(404).send();
         }
         res.status(200).send(user);
-    })
-    .catch((error) => {
+    } catch (e) {
         res.status(500).send(error);
-    })
+    }
 });
 
 

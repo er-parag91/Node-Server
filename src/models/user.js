@@ -33,7 +33,7 @@ const User = mongoose.model('User', {
         minlength: 6,
         validate(value) {
             if (value.toLowerCase().includes('password')) {
-                throw new Error('Your password should not containe common words');
+                throw new Error('Your password should not contain common words');
             }
         }
     }
