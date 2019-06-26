@@ -55,7 +55,6 @@ app.get('/users/:id', (req, res) => {
 
 
 // Find user by id and update - patch request
-
 app.patch('/users/:id', (req, res) => {
     User.findByIdAndUpdate({ _id: req.params.id}, {
         age: 11
@@ -67,6 +66,22 @@ app.patch('/users/:id', (req, res) => {
         res.status(500).send(error);
     })
 }) 
+
+// Find user by id and delete - delete request
+app.delete('/users/:id', (req, res) => {
+    User.findByIdAndDelete({ _id: req.params.id})
+    .then((user) => {
+        if (!user) {
+            res.status(400).send('Error ocuured while deleting');
+        }
+        res.status(200).send(user);
+    })
+    .catch((error) => {
+        res.status(500).send(error);
+    })
+});
+
+
 
 // -------------------------- Task routes -----------------------//
 
@@ -112,13 +127,29 @@ app.get('/tasks/:id', (req, res) => {
 });
 
 // Find task by id and update - patch request
-
 app.patch('/tasks/:id', (req, res) => {
     Task.findByIdAndUpdate({ _id: req.params.id}, {
         description: 'Do laundry and press'
     })
     .then((task) => {
-        res.status(201).send(task);
+        if (!task) {
+            res.status(400).send('Error ocuured while updating');
+        }
+        res.status(200).send(task);
+    })
+    .catch((error) => {
+        res.status(500).send(error);
+    })
+}) 
+
+// Find task by id and delete - delete request
+app.delete('/tasks/:id', (req, res) => {
+    Task.findByIdAndDelete({ _id: req.params.id})
+    .then((task) => {
+        if (!task) {
+            res.status(400).send('Error ocuured while deleting');
+        }
+        res.status(200).send(task);
     })
     .catch((error) => {
         res.status(500).send(error);
