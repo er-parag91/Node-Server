@@ -43,13 +43,30 @@ app.get('/users/:id', (req, res) => {
             _id: req.params.id
         })
         .then(user => {
+            if (user) {
+                return res.status(404).send('User not found');
+            }
             res.status(200).send(user);
         })
         .catch(error => {
-            res.status(400).send(error);         
+            res.status(500).send(error);         
         })
 });
 
+
+// Find user by id and update - patch request
+
+app.patch('/users/:id', (req, res) => {
+    User.findByIdAndUpdate({ _id: req.params.id}, {
+        age: 11
+    })
+    .then((user) => {
+        res.status(201).send(user);
+    })
+    .catch((error) => {
+        res.status(500).send(error);
+    })
+}) 
 
 // -------------------------- Task routes -----------------------//
 
@@ -84,12 +101,30 @@ app.get('/tasks/:id', (req, res) => {
             _id: req.params.id
         })
         .then(task => {
+            if (task) {
+                return res.status(404).send('Task not found')
+            }
             res.status(200).send(task);
         })
         .catch(error => {
-            res.status(400).send(error);         
+            res.status(500).send(error);         
         })
 });
+
+// Find task by id and update - patch request
+
+app.patch('/tasks/:id', (req, res) => {
+    Task.findByIdAndUpdate({ _id: req.params.id}, {
+        description: 'Do laundry and press'
+    })
+    .then((task) => {
+        res.status(201).send(task);
+    })
+    .catch((error) => {
+        res.status(500).send(error);
+    })
+}) 
+
 
 // Listener
 app.listen(port, () => {
