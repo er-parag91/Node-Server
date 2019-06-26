@@ -20,11 +20,23 @@ MongoClient.connect('mongodb://127.0.0.1:27017', { useNewUrlParser: true }, (err
     //     console.log(err)
     // })
 
-    db.collection('users').updateOne({
-        name: 'Pragnesh'
+    // db.collection('users').updateOne({
+    //     name: 'Pragnesh'
+    // }, {
+    //     $inc: {
+    //         age: 1
+    //     }
+    // }).then((result) => {
+    //     console.log(result)
+    // }, (err) => {
+    //     console.log(err)
+    // })
+
+    db.collection('tasks').updateMany({
+        completed: true
     }, {
-        $inc: {
-            age: 1
+        $set: {
+            completed: false
         }
     }).then((result) => {
         console.log(result)
