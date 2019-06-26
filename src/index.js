@@ -14,16 +14,15 @@ app.use(express.json());
 // -------------------------- User routes -----------------------//
 
 // Create user - post request
-app.post('/users', (req, res) => {
+app.post('/users', async (req, res) => {
     const user = new User(req.body);
 
-    user.save()
-        .then((user) => {
-            res.status(201).send(user);
-        })
-        .catch((error) => {
-            res.status(400).send(error);
-        })
+    try {
+        await user.save();
+        res.status(201).send(user);
+    } catch(e) {
+        res.status(400).send(error);
+    }
 })
 
 // Read users - Get request
