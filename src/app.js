@@ -7,16 +7,14 @@ MongoClient.connect('mongodb://127.0.0.1:27017', { useNewUrlParser: true }, (err
     }
     console.log('Connected Successfully');
     const db = client.db('Task-Manager');
-    const updateOneById = db.collection('tasks').updateOne({
+    db.collection('tasks').updateOne({
         _id: new ObjectId("5d12ad0f3feb51061215e025")
     }, {
         $set: {
             description: 'Book a Rental car',
-            completed: false
+            completed: true
         }
-    })
-
-    updateOneById.then((result) => {
+    }).then((result) => {
         console.log(result)
     }, (err) => {
         console.log(err)
