@@ -39,12 +39,20 @@ const userSchema = new mongoose.Schema({
                 throw new Error('Your password should not contain common words');
             }
         }
-    }
+    },
+    tokens: [{
+        token: {
+            type: String,
+            required: true
+        }
+    }]
 })
 
 userSchema.methods.generateAuthToken = async function() {
     const user = this;
     const token = jwt.sign({_id: user._id.toString()}, 'thisismyjwtwebtoken');
+    user.tokens = user.tokens.concat({ token });
+    await user.save();
     return token;
 }
 userSchema.statics.findByCredentials = async (email, password) => {
