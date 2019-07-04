@@ -4,6 +4,9 @@ const router  = new express.Router();
 // Schema
 const User = require('../models/user');
 
+// Auth middleware
+const auth = require('../middleware/auth');
+
 // -------------------------- User routes -----------------------//
 
 // Create user - post request
@@ -20,7 +23,7 @@ router.post('/users', async (req, res) => {
 })
 
 // Read users - Get request
-router.get('/users', async (req, res) => {
+router.get('/users', auth, async (req, res) => {
 
     try {
         const user = await User.find({});
