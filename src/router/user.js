@@ -65,23 +65,6 @@ router.post('/users/logoutAll', auth, async(req, res) => {
     }
 })
 
-// Read user by id - Get request
-router.get('/users/:id', async (req, res) => {
-
-    const _id =  req.params.id;
-
-    try{
-        const user = await User.findById({_id: _id});
-
-        if (!user) {
-            res.status(404).send();
-        }
-        res.status(200).send(user);
-    } catch(e) {
-        res.status(500).send(e);         
-    }
-});
-
 
 // Find user by id and update - patch request
 router.patch('/users/:id', async (req, res) => {
