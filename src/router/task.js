@@ -27,11 +27,17 @@ router.post('/tasks', auth, async (req, res) => {
 })
 
 // Read task - Get request
-router.get('/tasks', async (req, res) => {
+router.get('/tasks', auth, async (req, res) => {
 
     try {
-        const tasks = await Task.find({});
-        res.status(200).send(tasks);
+        const tasks = await Task.find({ owner: req.user._id });
+        res.send(tasks);
+
+
+        // second approach - with populate method
+        // await req.user.populate('tasks').execPopulate();
+        // res.send(req.user.tasks);
+
     } catch (e) {
         res.status(400).send(e);
     }
