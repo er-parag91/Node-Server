@@ -35,7 +35,7 @@ router.get('/tasks', auth, async (req, res) => {
     }
 
     try {
-        const tasks = await Task.find(query).limit(parseInt(req.query.limit));
+        const tasks = await Task.find(query).limit(parseInt(req.query.limit)).skip(parseInt(req.query.skip));
         res.send(tasks);
 
 
