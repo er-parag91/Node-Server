@@ -48,6 +48,13 @@ const userSchema = new mongoose.Schema({
     }]
 })
 
+// sets up relation between task and user who created it
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
+})
+
 userSchema.methods.toJSON = function(){
     const user = this;
 
