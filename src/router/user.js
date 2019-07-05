@@ -67,7 +67,7 @@ router.post('/users/logoutAll', auth, async(req, res) => {
 
 
 // Find user by id and update - patch request
-router.patch('/users/:id', async (req, res) => {
+router.patch('/users/me', auth, async (req, res) => {
 
     const updates = Object.keys(req.body);
     const allowedUpdates = ['name', 'email', 'password', 'age'];
@@ -78,15 +78,11 @@ router.patch('/users/:id', async (req, res) => {
         return res.status(400).send({ error: 'Not valid updates'});
     }
     try {
-        const user = await User.findByIdAndUpdate(req.params.id);
+        const user = req.user;
 
         updates.forEach(update => user[update] = req.body[update]);
         await user.save();
-
-        if (!user) {
-            res.status(404).send();
-        }
-        res.status(200).send(user);
+        res.send(user);
     } catch (e) {
         res.status(400).send(e);
     }
