@@ -38,16 +38,16 @@ router.get('/tasks', async (req, res) => {
 });
 
 // Read task by id - Get request
-router.get('/tasks/:id', async (req, res) => {
+router.get('/tasks/:id', auth, async (req, res) => {
     const _id = req.params.id;
 
     try {
-        const task = await Task.findById(_id);
+        const task = await Task.findOne({ _id, owner: req.user._id });
 
         if (!task) {
             res.status(404).send();
         }
-        res.status(200).send(task);
+        res.send(task);
     } catch (e) {
         res.status(500).send(e);
     }
