@@ -9,7 +9,7 @@ const auth = require('../middleware/auth');
 
 // -------------------------- User routes -----------------------//
 
-// Create user - post request
+// Create/Sign up user - post request
 router.post('/users', async (req, res) => {
     const user = new User(req.body);
 
@@ -23,14 +23,8 @@ router.post('/users', async (req, res) => {
 })
 
 // Read users - Get request
-router.get('/users', auth, async (req, res) => {
-
-    try {
-        const user = await User.find({});
-        res.status(200).send(user);
-    } catch(e) {
-        res.status(400).send(e);
-    }
+router.get('/users/me', auth, async (req, res) => {
+    res.send(req.user);
 });
 
 // log in the user based on comparison method
@@ -45,6 +39,31 @@ router.post('/users/login', async (req, res) => {
     }
 })
 
+// Log Out the user based on req.token supplied
+router.post('/users/logout', auth, async(req, res) => {
+    try {
+        req.user.tokens = req.user.tokens.filter((token) => {
+            return token.token !== req.token;
+        });
+
+        await req.user.save();
+        res.send();
+    } catch(e){
+        res.status(500).send();
+    }
+})
+
+// Log out of all devices or clear the tokens object on the user
+router.post('/users/logoutAll', auth, async(req, res) => {
+    try {
+        req.user.tokens = [];
+
+        await req.user.save();
+        res.send();
+    } catch(e) {
+        res.status(500).send();
+    }
+})
 
 // Read user by id - Get request
 router.get('/users/:id', async (req, res) => {
