@@ -47,6 +47,8 @@ const userSchema = new mongoose.Schema({
             required: true
         }
     }]
+}, {
+    timestamps: true
 })
 
 // sets up relation between task and user who created it
