@@ -28,16 +28,14 @@ router.post('/tasks', auth, async (req, res) => {
 
 // Read task - Get request
 router.get('/tasks', auth, async (req, res) => {
-    const query = { owner: req.user._id };
+    const query = { owner: req.user._id};
 
     if (req.query.completed) {
         query.completed = req.query.completed === 'true';
     }
 
     try {
-
-        console.log(query);
-        const tasks = await Task.find(query);
+        const tasks = await Task.find(query).limit(parseInt(req.query.limit));
         res.send(tasks);
 
 
