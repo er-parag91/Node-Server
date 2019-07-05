@@ -60,7 +60,7 @@ router.get('/tasks/:id', auth, async (req, res) => {
 });
 
 // Find task by id and update - patch request
-router.patch('/tasks/:id', async (req, res) => {
+router.patch('/tasks/:id', auth, async (req, res) => {
     const updates = Object.keys(req.body);
     const allowedUpdates = ['description', 'completed'];
 
@@ -72,13 +72,12 @@ router.patch('/tasks/:id', async (req, res) => {
         });
     }
     try {
-        const task = await Task.findByIdAndUpdate(req.params.id);
-        updates.forEach(update => task[update] = req.body[update]);
-        await task.save();
-
+        const task = await Task.findOne({ _id: req.params.id, owner: req.user._id });
         if (!task) {
             res.status(404).send();
         }
+        updates.forEach(update => task[update] = req.body[update]);
+        await task.save();
         res.status(200).send(task);
     } catch (e) {
         res.status(400).send(e);
