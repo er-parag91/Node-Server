@@ -1,17 +1,22 @@
 const express = require('express');
-const router  = new express.Router();
+const router = new express.Router();
 
 // Schema
 const Task = require('../models/task');
 
+// auth middleware
+const auth = require('../middleware/auth');
 
 
 
 // -------------------------- Task routes -----------------------//
 
 // Create Task - post request
-router.post('/tasks', async (req, res) => {
-    const task = new Task(req.body);
+router.post('/tasks', auth, async (req, res) => {
+    const task = new Task({
+            ...req.body,
+            owner: req.user._id
+    });
 
     try {
         await task.save();
@@ -34,7 +39,7 @@ router.get('/tasks', async (req, res) => {
 
 // Read task by id - Get request
 router.get('/tasks/:id', async (req, res) => {
-    const _id =  req.params.id;
+    const _id = req.params.id;
 
     try {
         const task = await Task.findById(_id);
@@ -44,7 +49,7 @@ router.get('/tasks/:id', async (req, res) => {
         }
         res.status(200).send(task);
     } catch (e) {
-        res.status(500).send(e);         
+        res.status(500).send(e);
     }
 });
 
@@ -56,7 +61,9 @@ router.patch('/tasks/:id', async (req, res) => {
     const isValidOperation = updates.every(update => allowedUpdates.includes(update));
 
     if (!isValidOperation) {
-        res.status(400).send({ error: 'Not valid updates' });
+        res.status(400).send({
+            error: 'Not valid updates'
+        });
     }
     try {
         const task = await Task.findByIdAndUpdate(req.params.id);
@@ -78,14 +85,16 @@ router.delete('/tasks/:id', async (req, res) => {
     try {
         const task = await Task.findByIdAndDelete(req.params.id);
         if (!task) {
-            res.status(404).send({ error: 'Invalid delete operation'});
+            res.status(404).send({
+                error: 'Invalid delete operation'
+            });
         }
         res.status(200).send(task);
-        
+
     } catch (e) {
         res.status(400).send(error);
     }
-}) 
+})
 
 
 module.exports = router;
