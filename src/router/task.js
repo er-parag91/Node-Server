@@ -29,13 +29,21 @@ router.post('/tasks', auth, async (req, res) => {
 // Read task - Get request
 router.get('/tasks', auth, async (req, res) => {
     const query = { owner: req.user._id};
-
+    const sort = {}
     if (req.query.completed) {
         query.completed = req.query.completed === 'true';
     }
 
+    if (req.query.sortBy) {
+        const parts = req.query.sortBy.split(':');
+        sort[parts[0]] = parts[1] === 'desc' ? -1 : 1;
+    }
+
     try {
-        const tasks = await Task.find(query).limit(parseInt(req.query.limit)).skip(parseInt(req.query.skip));
+        const tasks = await Task.find(query)
+                            .limit(parseInt(req.query.limit))
+                            .skip(parseInt(req.query.skip))
+                            .sort(sort);
         res.send(tasks);
 
 
