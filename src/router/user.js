@@ -7,6 +7,9 @@ const User = require('../models/user');
 // Auth middleware
 const auth = require('../middleware/auth');
 
+// file upload package
+const multer = require('multer');
+
 // -------------------------- User routes -----------------------//
 
 // Create/Sign up user - post request
@@ -100,5 +103,24 @@ router.delete('/users/me', auth, async (req, res) => {
     }
 });
 
+const upload = multer({
+    dest: 'avatars',
+    limits: {
+        fileSize: 1000000
+    },
+    fileFilter(req, file, cb) {
+        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+            return cb(new Error('Please upload jpg or jpeg or png file only'));
+        }
+        cb(undefined, true);
+    }
+});
+
+// upload profile picture
+router.post('/users/me/avatar', upload.single('avatar'), (req, res) => {
+    res.send();
+}, (error, req, res, next) => {
+    res.status(400).send({ error: error.message });
+});
 
 module.exports = router;
