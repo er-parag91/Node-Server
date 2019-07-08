@@ -30,3 +30,11 @@ test('should log in the user', async () => {
         password: 'Test123!!'
     }).expect(200);
 })
+
+// test for not login the user with bad credentials
+test('should not log in the user for bad credential', async () => {
+    await request(app).post('/users/login').send({
+        email: userOne.email,
+        password: 'thisIsIncorrectPasswor!!'
+    }).expect(400);
+})
