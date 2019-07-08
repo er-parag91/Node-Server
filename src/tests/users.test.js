@@ -14,10 +14,19 @@ beforeEach(async () => {
     await new User(userOne).save();
 })
 
+// test for signing up the user
 test('should sign up the new user', async () => {
     await request(app).post('/users').send({
         name: 'Parag Patel',
         email: 'ppatel81@dev.com',
         password: 'Red123!!'
     }).expect(201);
+});
+
+// test for login the existing user
+test('should log in the user', async () => {
+    await request(app).post('/users/login').send({
+        email: 'test@test.com',
+        password: 'Test123!!'
+    }).expect(200);
 })
