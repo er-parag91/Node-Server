@@ -10,6 +10,9 @@ const auth = require('../middleware/auth');
 // file upload package
 const multer = require('multer');
 
+// Cropping image tool
+const sharp = require('sharp');
+
 // -------------------------- User routes -----------------------//
 
 // Create/Sign up user - post request
@@ -124,12 +127,28 @@ router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) 
     res.status(400).send({ error: error.message });
 });
 
+// router get profile picture
+router.get('/users/:id/avatar', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user || !user.avatar) {
+            throw new Error();
+        }
+        res.set('Content-Type', 'image/jpg')
+        res.send(user.avatar);
+    } catch(e) {
+        res.status(404).send();
+    }
+});
+
 // delete the profile picture
 router.delete('/users/me/avatar', auth, async (req, res) => {
     req.user.avatar = undefined;
     await req.user.save();
     res.send();
 });
+
 
 
 
