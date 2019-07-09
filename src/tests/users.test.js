@@ -54,10 +54,35 @@ test('should not log in the user for bad credential', async () => {
 })
 
 // read or get user profile with setting up headers(token)
-test('should get the user profile', async() => {
+test('should get the user profile', async () => {
     await request(app)
             .get('/users/me')
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send()
             .expect(200);
+})
+
+// should not get user profile if unauthenticated or token is not set
+test('should not get user profile if unauthenticated or token is not set', async() => {
+    await request(app)
+            .get('/users/me')
+            .send()
+            .expect(401);
+})
+
+// delete account operation works if user is authenticate
+test('should delete the user account if user is authenticated', async () => {
+    await request(app)
+            .delete('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200);
+})
+
+// delete account operation does not work if user is unauthenticate
+test('should not delete the user account if user is  not authenticated', async () => {
+    await request(app)
+            .delete('/users/me')
+            .send()
+            .expect(401);
 })
