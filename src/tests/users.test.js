@@ -86,3 +86,56 @@ test('should not delete the user account if user is  not authenticated', async (
         .send()
         .expect(401);
 })
+
+// -------------------- Advanced Assertion ----------------//
+// test for signing up the user
+test('should have added the new user to database', async () => {
+    const response = await request(app)
+        .post('/users')
+        .send({
+            name: 'Parag Patel',
+            email: 'ppatel81@dev.com',
+            password: 'Red123!!'
+        }).expect(201);
+    
+    // assert about database was changed
+    const user = await User.findById(response.body.user._id)
+    expect(user).not.toBeNull()
+
+    // assert about response
+    expect(response.body).toMatchObject({
+        user: {
+            name: 'Parag Patel',
+            email: 'ppatel81@dev.com'
+        },
+        token: user.tokens[0].token
+    });
+
+    // assert about plain text password is not saved
+    expect(user.password).not.toBe('Red123!!');
+});
+
+// test for token is saved when user logs in
+test('should save token on logging in the user', async () => {
+   const response = await request(app)
+        .post('/users/login')
+        .send({
+            email: 'test@test.com',
+            password: 'Test123!!'
+        }).expect(200);
+
+    const user = await User.findById(response.body.user._id);
+    expect(response.body.token).toBe(user.tokens[1].token);
+});
+
+// delete account operation works and that user should not be in database anymore
+test('should remove the user account from database if user is authenticated', async () => {
+    const response = await request(app)
+        .delete('/users/me')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send()
+        .expect(200);
+    
+    const user = await User.findById(userOneID);
+    expect(user).toBeNull();
+})
