@@ -1,26 +1,11 @@
 const request = require('supertest');
-const app = require('../app');
-const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
+const app = require('../src/app');
+
+const User = require('../src/models/user');
+const { userOneID, userOne, setupDatabase } = require('./fixtures/db.js');
 
 
-const User = require('../models/user');
-
-const userOneID = new mongoose.Types.ObjectId();
-const userOne = {
-    _id: userOneID,
-    name: 'Test',
-    email: 'test@test.com',
-    password: 'Test123!!',
-    tokens: [{
-        token: jwt.sign({_id:userOneID}, process.env.JWT_SECRET)
-    }]
-}
-
-beforeEach(async () => {
-    await User.deleteMany();
-    await new User(userOne).save();
-})
+beforeEach(setupDatabase);
 
 // test for signing up the user
 test('should sign up the new user', async () => {
@@ -41,7 +26,7 @@ test('should log in the user', async () => {
             email: 'test@test.com',
             password: 'Test123!!'
         }).expect(200);
-})
+});
 
 // test for not login the user with bad credentials
 test('should not log in the user for bad credential', async () => {
@@ -51,7 +36,7 @@ test('should not log in the user for bad credential', async () => {
             email: userOne.email,
             password: 'thisIsIncorrectPasswor!!'
         }).expect(400);
-})
+});
 
 // read or get user profile with setting up headers(token)
 test('should get the user profile', async () => {
@@ -60,7 +45,7 @@ test('should get the user profile', async () => {
         .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
         .send()
         .expect(200);
-})
+});
 
 // should not get user profile if unauthenticated or token is not set
 test('should not get user profile if unauthenticated or token is not set', async() => {
@@ -68,7 +53,7 @@ test('should not get user profile if unauthenticated or token is not set', async
         .get('/users/me')
         .send()
         .expect(401);
-})
+});
 
 // delete account operation works if user is authenticate
 test('should delete the user account if user is authenticated', async () => {
@@ -77,7 +62,7 @@ test('should delete the user account if user is authenticated', async () => {
         .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
         .send()
         .expect(200);
-})
+});
 
 // delete account operation does not work if user is unauthenticate
 test('should not delete the user account if user is  not authenticated', async () => {
@@ -85,7 +70,54 @@ test('should not delete the user account if user is  not authenticated', async (
         .delete('/users/me')
         .send()
         .expect(401);
+});
+
+// should upload profile picture successfully
+test('should upload profile picture successfully', async () => {
+    await request(app)
+        .post('/users/me/avatar')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .attach('avatar', 'tests/fixtures/philly.jpg')
+        .expect(200);
+
+    const user = await User.findById(userOneID);
+    expect(user.avatar).toEqual(expect.any(Buffer));
 })
+
+// to update the user data with authentication
+test('should update the user profile correctly if valid updates and authentication provided', async() => {
+    await request(app)
+        .patch('/users/me')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send({
+            name: 'PPatel81'
+        })
+        .expect(200)
+
+    const user = await User.findById(userOneID);
+    expect(user.name).toBe('PPatel81')
+});
+
+// should not update the user profile if invalid updates provided
+test('should not update the user profile if invalid updates provided', async() => {
+    await request(app)
+        .patch('/users/me')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send({
+            location: 'PPatel81'
+        })
+        .expect(400)
+});
+
+// should not update the user profile if not authenticated
+test('should not update the user profile if not authenticated', async() => {
+    await request(app)
+        .patch('/users/me')
+        .send({
+            name: 'PPatel81'
+        })
+        .expect(401)
+});
 
 // -------------------- Advanced Assertion ----------------//
 // test for signing up the user
