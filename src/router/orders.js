@@ -2,7 +2,7 @@ const express = require('express');
 const router = new express.Router();
 
 // Schema
-const Order = require('../../config/models/orders');
+const Order = require('../models/orders');
 
 // auth middleware
 const auth = require('../middleware/auth');
