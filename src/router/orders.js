@@ -2,7 +2,7 @@ const express = require('express');
 const router = new express.Router();
 
 // Schema
-const Order = require('../models/orders');
+const Order = require('../../config/models/orders');
 
 // auth middleware
 const auth = require('../middleware/auth');
@@ -14,8 +14,8 @@ const auth = require('../middleware/auth');
 // Create Order - post request
 router.post('/orders', auth, async (req, res) => {
     const order = new Order({
-            ...req.body,
-            owner: req.user._id
+        ...req.body,
+        owner: req.user._id
     });
 
     try {
@@ -28,7 +28,10 @@ router.post('/orders', auth, async (req, res) => {
 
 // Read order - Get request
 router.get('/orders', auth, async (req, res) => {
-    const query = { owner: req.user._id};
+    // to check who is accessing orders: admin/customer
+    const query = req.user.admin ? {} : {
+        owner: req.user._id
+    };
     try {
         const orders = await Order.find(query);
         res.send(orders);
@@ -48,7 +51,14 @@ router.get('/orders/:id', auth, async (req, res) => {
     const _id = req.params.id;
 
     try {
-        const order = await Order.findOne({ _id, owner: req.user._id });
+        // checks if admin is making an update/delete ops to order, it will skip the auther checks as admin should be able update/delete order created by anyone
+        const query = req.user.admin ? {
+            _id,
+        } : {
+            _id,
+            owner: req.user._id
+        };
+        const order = await Order.findOne(query);
 
         if (!order) {
             res.status(404).send();
@@ -72,7 +82,14 @@ router.patch('/orders/:id', auth, async (req, res) => {
         });
     }
     try {
-        const order = await Order.findOne({ _id: req.params.id, owner: req.user._id });
+        // checks if admin is making an update to order, it will skip the auther checks as admin should be able any order created by anyone
+        const query = req.user.admin ? {
+            _id: req.params.id,
+        } : {
+            _id: req.params.id,
+            owner: req.user._id
+        };
+        const order = await Order.findOne(query);
         if (!order) {
             res.status(404).send();
         }
@@ -88,7 +105,14 @@ router.patch('/orders/:id', auth, async (req, res) => {
 router.delete('/orders/:id', auth, async (req, res) => {
 
     try {
-        const order = await Order.findOneAndDelete({ _id: req.params.id, owner: req.user._id });
+        // checks if admin is making an update/delete ops to order, it will skip the auther checks as admin should be able update/delete order created by anyone
+        const query = req.user.admin ? {
+            _id: req.params.id,
+        } : {
+            _id: req.params.id,
+            owner: req.user._id
+        };
+        const order = await Order.findOneAndDelete(query);
         if (!order) {
             return res.status(404).send({
                 error: 'Invalid delete operation'

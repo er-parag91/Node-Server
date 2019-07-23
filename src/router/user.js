@@ -2,7 +2,7 @@ const express = require('express');
 const router  = new express.Router();
 
 // Schema
-const User = require('../models/user');
+const User = require('../../config/models/user');
 
 // Auth middleware
 const auth = require('../middleware/auth');
@@ -80,7 +80,7 @@ router.post('/users/logoutAll', auth, async(req, res) => {
 router.patch('/users/me', auth, async (req, res) => {
 
     const updates = Object.keys(req.body);
-    const allowedUpdates = ['name', 'email', 'password', 'age'];
+    const allowedUpdates = ['name', 'email', 'password'];
 
     const isValidOperation = updates.every(update =>  allowedUpdates.includes(update));
 
