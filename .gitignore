@@ -1,4 +1,6 @@
 node_modules
 yarn.lock
 config/prod.env
+config/dev.env
+config/test.env
 config/models
