@@ -3,24 +3,16 @@ const mongoose = require('mongoose');
 
 const orderItems = new mongoose.Schema({
     kajuKatri: {
-        type: Number,
-        default: 0,
-        required: true,
+        type: Number
     },
     anjeerRoll: {
-        type: Number,
-        default: 0,
-        required: true,
+        type: Number
     },
     kopraPak: {
-        type: Number,
-        default: 0,
-        required: true,
+        type: Number
     },
     mohanThaal: {
-        type: Number,
-        default: 0,
-        required: true,
+        type: Number
     },
     chavaanu: {
         type: Number
@@ -28,7 +20,7 @@ const orderItems = new mongoose.Schema({
     fulvadi: {
         type: Number
     },
-    sonPapdi:{
+    sonPapdi: {
         type: Number
     },
     owner: {
@@ -42,4 +34,4 @@ const orderItems = new mongoose.Schema({
 
 const Order = mongoose.model('Order', orderItems);
 
-module.exports = Order; 
+module.exports = Order;
