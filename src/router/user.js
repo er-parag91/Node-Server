@@ -1,186 +1,47 @@
 const express = require('express');
 const router  = new express.Router();
-const passwordGenerator = require('generate-password');
-const bcrypt = require('bcryptjs');
 
-// Schema
-const User = require('../models/user');
+// controller
+const userController = require('../controller/user');
 
 // Auth middleware
 const auth = require('../middleware/auth');
 
-// file upload package
-const multer = require('multer');
-
-// Cropping image tool
-const sharp = require('sharp');
-
-// sending out emails funtions
-const { sendWelcomeEmail, sendCancelEmail, sendResetPasswordEmail } = require('../emails/account');
 
 // -------------------------- User routes -----------------------//
 
 // Create/Sign up user - post request
-router.post('/users', async (req, res) => {
-    const user = new User(req.body);
-    try {
-        await user.save();
-        sendWelcomeEmail(user.email, user.firstName);
-        const token = await user.generateAuthToken();
-        res.status(201).send({ user, token });
-    } catch(e) {
-        console.log(e.message);
-        res.status(400).send(e.message);
-    }
-})
+router.post('/users', userController.signup);
 
 // Read users - Get request
-router.get('/users/me', auth, async (req, res) => {
-    res.send(req.user);
-});
+router.get('/users/me', auth, userController.getUser);
 
 // log in the user based on comparison method
-router.post('/users/login', async (req, res) => {
-    try {
-        const user = await User.findByCredentials(req.body.email, req.body.password);
-        const token = await user.generateAuthToken();
-        setTimeout(() => {
-            res.send({user, token});
-        }, 3000)
-    } catch (e) {
-        res.status(400).send('Invalid Credentials. Please try again!');
-    }
-})
+router.post('/users/login', userController.userLogin)
 
 // Forgot password post request
-router.post('/users/forgotPassword', async (req, res) => {
-    try {
-        const user = await User.findOne({ email: req.body.email });
-        const newPassword = passwordGenerator.generate({
-            length: 15,
-            numbers: true,
-            symbols: true,
-            uppercase: true,
-            lowercase: true
-        });
-        const hashedPassword = await bcrypt.hash(newPassword, 8)
-        user.resetPassword = {
-            resetRequested: true,
-            password: hashedPassword
-        }
-        await user.save();
-        sendResetPasswordEmail(user.email, newPassword);
-        res.send();
-    } catch(e) {
-        console.log(e);
-        res.status(400).send('Error while sending reset request. Please try again later!');
-    }
-});
+router.post('/users/forgotPassword', userController.userForgotPassword);
 
 // Log Out the user based on req.token supplied
-router.post('/users/logout', auth, async(req, res) => {
-    try {
-        req.user.tokens = req.user.tokens.filter((token) => {
-            return token.token !== req.token;
-        });
-        await req.user.save();
-        res.send();
-    } catch(e){
-        res.status(500).send();
-    }
-})
+router.post('/users/logout', auth, userController.logoutUser)
 
 // Log out of all devices or clear the tokens object on the user
-router.post('/users/logoutAll', auth, async(req, res) => {
-    try {
-        req.user.tokens = [];
-
-        await req.user.save();
-        res.send();
-    } catch(e) {
-        res.status(500).send();
-    }
-})
+router.post('/users/logoutAll', auth, userController.userLogoutAll)
 
 
 // Find user by id and update - patch request
-router.patch('/users/me', auth, async (req, res) => {
-
-    const updates = Object.keys(req.body);
-    const allowedUpdates = ['name', 'email', 'password'];
-
-    const isValidOperation = updates.every(update =>  allowedUpdates.includes(update));
-
-    if (!isValidOperation) {
-        return res.status(400).send({ error: 'Not valid updates'});
-    }
-    try {
-        const user = req.user;
-
-        updates.forEach(update => user[update] = req.body[update]);
-        await user.save();
-        res.send(user);
-    } catch (e) {
-        res.status(400).send(e);
-    }
-}) 
+router.patch('/users/me', auth, userController.updateUser) 
 
 // Find user by id and delete - delete request
-router.delete('/users/me', auth, async (req, res) => {
-    try {
-        await req.user.remove();
-        sendCancelEmail(req.user.email, req.user.name);
-        res.send(req.user);
-    } catch (e) {
-        res.status(500).send(e);
-    }
-});
-
-const upload = multer({
-    limits: {
-        fileSize: 1000000
-    },
-    fileFilter(req, file, cb) {
-        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-            return cb(new Error('Please upload jpg or jpeg or png file only'));
-        }
-        cb(undefined, true);
-    }
-});
+router.delete('/users/me', auth, userController.deleteUser);
 
 // upload profile picture
-router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) => {
-    const buffer = await sharp(req.file.buffer).resize({ width: 250, height: 250 }).png().toBuffer()
-    req.user.avatar = buffer;
-    await req.user.save();
-    res.send();
-}, (error, req, res, next) => {
-    res.status(400).send({ error: error.message });
-});
+router.post('/users/me/avatar', auth, userController.pictureUpload.single('avatar'), userController.userUpdatePicture);
 
 // router get profile picture
-router.get('/users/:id/avatar', async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id);
-
-        if (!user || !user.avatar) {
-            throw new Error();
-        }
-        res.set('Content-Type', 'image/png')
-        res.send(user.avatar);
-    } catch(e) {
-        res.status(404).send();
-    }
-});
+router.get('/users/:id/avatar', userController.getUserPicture);
 
 // delete the profile picture
-router.delete('/users/me/avatar', auth, async (req, res) => {
-    req.user.avatar = undefined;
-    await req.user.save();
-    res.send();
-});
-
-
-
+router.delete('/users/me/avatar', auth, userController.deleteUserPicture);
 
 module.exports = router;
