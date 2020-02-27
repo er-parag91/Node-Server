@@ -1,4 +1,5 @@
 const User = require('../models/user');
+
 const {
   sendWelcomeEmail,
   sendCancelEmail,
@@ -6,7 +7,6 @@ const {
 } = require('../emails/account');
 const passwordGenerator = require('generate-password');
 const bcrypt = require('bcryptjs');
-
 // Cropping image tool
 const sharp = require('sharp');
 // file upload package
@@ -15,6 +15,7 @@ const multer = require('multer');
 exports.signup = async (req, res, next) => {
   const user = new User(req.body);
   try {
+    user.password = await bcrypt.hash(user.password, 16);
     await user.save();
     sendWelcomeEmail(user.email, user.firstName);
     const token = await user.generateAuthToken();
@@ -58,7 +59,7 @@ exports.userForgotPassword = async (req, res) => {
       uppercase: true,
       lowercase: true
     });
-    const hashedPassword = await bcrypt.hash(newPassword, 8)
+    const hashedPassword = await bcrypt.hash(newPassword, 12)
     user.resetPassword = {
       resetRequested: true,
       password: hashedPassword

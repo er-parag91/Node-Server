@@ -89,17 +89,6 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 })
 
-userSchema.methods.toJSON = function () {
-    const user = this;
-    const userObject = user.toObject();
-    delete userObject.tokens;
-    delete userObject.password;
-    delete userObject.avatar;
-
-    return userObject;
-}
-
-
 
 userSchema.methods.generateAuthToken = async function () {
     const user = this;
@@ -124,23 +113,9 @@ userSchema.statics.findByCredentials = async (email, password) => {
     if (!isMatch) {
         throw new Error('Unable to login');
     }
-
     return user;
 }
 
-userSchema.pre('save', async function (next) {
-    const user = this;
-
-    if (user.isModified('password')) {
-        user.password = await bcrypt.hash(user.password, 8);
-    }
-    next();
-})
-
-userSchema.pre('remove', async function (next) {
-    const user = this;
-    next();
-});
 
 const User = mongoose.model('User', userSchema);
 
