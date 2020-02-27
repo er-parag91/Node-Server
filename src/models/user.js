@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const Task = require('./task');
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -90,18 +89,9 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 })
 
-// sets up relation between task and user who created it
-userSchema.virtual('tasks', {
-    ref: 'Task',
-    localField: '_id',
-    foreignField: 'owner'
-})
-
 userSchema.methods.toJSON = function () {
     const user = this;
-
     const userObject = user.toObject();
-
     delete userObject.tokens;
     delete userObject.password;
     delete userObject.avatar;
@@ -149,10 +139,6 @@ userSchema.pre('save', async function (next) {
 
 userSchema.pre('remove', async function (next) {
     const user = this;
-
-    await Task.deleteMany({
-        owner: user._id
-    });
     next();
 });
 

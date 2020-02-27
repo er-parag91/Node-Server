@@ -5,9 +5,7 @@ require('./db/mongoose');
 
 //Routers 
 const userRouter = require('./router/user');
-const taskRouter = require('./router/task');
-const orderRouter = require('./router/orders');
-const productRouter = require('./router/product-config');
+
 
 // express port config
 const app = express();
@@ -21,8 +19,5 @@ app.all('*', function (req, res, next) {
   next()
 })
 app.use(userRouter);
-app.use(taskRouter);
-app.use(orderRouter);
-app.use(productRouter);
 
 module.exports = app;
