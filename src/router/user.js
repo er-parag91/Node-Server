@@ -1,5 +1,7 @@
 const express = require('express');
 const router  = new express.Router();
+const passwordGenerator = require('generate-password');
+const bcrypt = require('bcryptjs');
 
 // Schema
 const User = require('../models/user');
@@ -14,21 +16,21 @@ const multer = require('multer');
 const sharp = require('sharp');
 
 // sending out emails funtions
-const { sendWelcomeEmail, sendCancelEmail } = require('../emails/account');
+const { sendWelcomeEmail, sendCancelEmail, sendResetPasswordEmail } = require('../emails/account');
 
 // -------------------------- User routes -----------------------//
 
 // Create/Sign up user - post request
 router.post('/users', async (req, res) => {
     const user = new User(req.body);
-
     try {
         await user.save();
-        sendWelcomeEmail(user.email, user.name);
+        sendWelcomeEmail(user.email, user.firstName);
         const token = await user.generateAuthToken();
         res.status(201).send({ user, token });
     } catch(e) {
-        res.status(400).send(e);
+        console.log(e.message);
+        res.status(400).send(e.message);
     }
 })
 
@@ -42,12 +44,38 @@ router.post('/users/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password);
         const token = await user.generateAuthToken();
-
-        res.send({user, token});
+        setTimeout(() => {
+            res.send({user, token});
+        }, 3000)
     } catch (e) {
-        res.status(400).send();
+        res.status(400).send('Invalid Credentials. Please try again!');
     }
 })
+
+// Forgot password post request
+router.post('/users/forgotPassword', async (req, res) => {
+    try {
+        const user = await User.findOne({ email: req.body.email });
+        const newPassword = passwordGenerator.generate({
+            length: 15,
+            numbers: true,
+            symbols: true,
+            uppercase: true,
+            lowercase: true
+        });
+        const hashedPassword = await bcrypt.hash(newPassword, 8)
+        user.resetPassword = {
+            resetRequested: true,
+            password: hashedPassword
+        }
+        await user.save();
+        sendResetPasswordEmail(user.email, newPassword);
+        res.send();
+    } catch(e) {
+        console.log(e);
+        res.status(400).send('Error while sending reset request. Please try again later!');
+    }
+});
 
 // Log Out the user based on req.token supplied
 router.post('/users/logout', auth, async(req, res) => {
@@ -55,7 +83,6 @@ router.post('/users/logout', auth, async(req, res) => {
         req.user.tokens = req.user.tokens.filter((token) => {
             return token.token !== req.token;
         });
-
         await req.user.save();
         res.send();
     } catch(e){
