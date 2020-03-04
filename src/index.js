@@ -4,6 +4,6 @@ const app = require('./app');
 const port = process.env.PORT;
 
 // Listener
-app.listen(port, () => {
-    console.log(`Server is up and running on ${port}`);
+app.listen(port, (err) => {
+    console.log(`App is up and running on ${port}`);
 });

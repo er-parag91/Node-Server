@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const validator = require('./validator');
 
 const {
   sendWelcomeEmail,
@@ -12,19 +13,36 @@ const sharp = require('sharp');
 // file upload package
 const multer = require('multer');
 
-exports.signup = async (req, res, next) => {
-  const user = new User(req.body);
+
+exports.signup = (req, res, next) => {
   try {
-    user.password = await bcrypt.hash(user.password, 16);
-    await user.save();
-    sendWelcomeEmail(user.email, user.firstName);
-    const token = await user.generateAuthToken();
-    res.status(201).send({
-      user,
-      token
-    });
+    // validates user sign up data before proceeding
+    validator.signUpValidation(req.body);
+    const user = new User(req.body);
+    return bcrypt.hash(user.password, 8)
+      .then(hashedPassword => {
+        user.password = hashedPassword;
+        return user.save();
+      })
+      .then(result => {
+        return user.generateAuthToken()
+      })
+      .then(token => {
+        // sendWelcomeEmail(user.email, user.firstName);
+        return res.status(201).send({
+          user,
+          token
+        });
+      })
+      .catch(err => {
+        if (err.code === 11000) {
+          console.log(err)
+          return res.status(422).send(err.errmsg);
+        }
+        return res.status(400).send('Something went wrong on our server! Please try again!');
+      })
   } catch (e) {
-    res.status(400).send(e.message);
+    return res.status(400).send(e.message || 'Something went wrong on our server! Please try again!');
   }
 };
 
@@ -32,18 +50,39 @@ exports.getUser = async (req, res, next) => {
   return res.send(req.user);
 }
 
-exports.userLogin = async (req, res) => {
+exports.userLogin = (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  let user;
   try {
-    const user = await User.findByCredentials(req.body.email, req.body.password);
-    const token = await user.generateAuthToken();
-    setTimeout(() => {
-      res.send({
-        user,
-        token
-      });
-    }, 3000)
+    User.findOne({
+        email
+      })
+      .then(foundUser => {
+        if (!foundUser) {
+          return res.status(400).send('Invalid Credentials. Please try again!');
+        }
+        user = foundUser;
+        return bcrypt.compare(password, user.password)
+      })
+      .then(isMatch => {
+        if (!isMatch) {
+          console.log(isMatch);
+          return res.status(400).send('Invalid Credentials. Please try again!');
+        }
+        return user.generateAuthToken();
+      })
+      .then(token => {
+        return res.status(200).send({
+          user,
+          token
+        });
+      })
+      .catch((e) => {
+        res.status(400).send(e.message ? e.message : 'Invalid Credentials. Please try again!');
+      })
   } catch (e) {
-    res.status(400).send('Invalid Credentials. Please try again!');
+    res.status(400).send('Something went wrong! Please try again');
   }
 }
 
@@ -167,12 +206,12 @@ exports.deleteUserPicture = async (req, res) => {
 
 exports.pictureUpload = multer({
   limits: {
-      fileSize: 1000000
+    fileSize: 1000000
   },
   fileFilter(req, file, cb) {
-      if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-          return cb(new Error('Please upload jpg or jpeg or png file only'));
-      }
-      cb(undefined, true);
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(new Error('Please upload jpg or jpeg or png file only'));
+    }
+    cb(undefined, true);
   }
 });

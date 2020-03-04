@@ -1,5 +1,3 @@
-// this file will be used for testing and everything will be exported to main index.js file where routes will be listened
-
 const express = require('express');
 require('./db/mongoose');
 
