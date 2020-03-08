@@ -138,7 +138,7 @@ exports.productValidation = productData => {
           }
           break;
         case 'productImage':
-          if (!validator.isURL(productData[key])) {
+          if (validator.isURL(productData[key])) {
             throw new Error('Product Image URL does not look right. Please try again or Contact Admin');
           }
           if (filter.isProfane(productData[key])) {

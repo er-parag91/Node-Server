@@ -114,3 +114,16 @@ exports.getRequestedProduct = (req, res, next) => {
     res.status(401).send('You are not allowed to access requested resouce!');
   }
 }
+
+exports.deleteMyProduct = (req, res, next) => {
+  if (!req.params.productId) {
+    return res.status(401).send('You are not missing required data to Delete resouce!');
+  }
+  Product.findOneAndDelete({ _id: req.params.productId, createdBy: req.user._id })
+    .then(result => {
+      res.status(200).send(`You have successfully deleted ${result.productName.slice(0, 15)}`)
+    })
+    .catch(err => {
+      return res.status(404).send('Something went wrong! Please try again');
+    });
+}
