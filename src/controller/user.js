@@ -36,13 +36,15 @@ exports.signup = (req, res, next) => {
       })
       .catch(err => {
         if (err.code === 11000) {
-          console.log(err)
           return res.status(422).send(err.errmsg);
         }
         return res.status(400).send('Something went wrong on our server! Please try again!');
       })
   } catch (e) {
-    return res.status(400).send(e.message || 'Something went wrong on our server! Please try again!');
+    if (e.message) {
+      return res.status(422).send(e.message);
+    }
+    return res.status(400).send('Something went wrong on our server! Please try again!');
   }
 };
 
@@ -67,7 +69,6 @@ exports.userLogin = (req, res) => {
       })
       .then(isMatch => {
         if (!isMatch) {
-          console.log(isMatch);
           return res.status(400).send('Invalid Credentials. Please try again!');
         }
         return user.generateAuthToken();
@@ -107,7 +108,6 @@ exports.userForgotPassword = async (req, res) => {
     sendResetPasswordEmail(user.email, newPassword);
     res.send();
   } catch (e) {
-    console.log(e);
     res.status(400).send('Error while sending reset request. Please try again later!');
   }
 }
@@ -159,7 +159,6 @@ exports.updateUser = async (req, res) => {
 }
 
 exports.deleteUser = async (req, res) => {
-  console.log(req.user);
   try {
     await req.user.remove();
     sendCancelEmail(req.user.email, req.user.firstName);

@@ -1,10 +1,9 @@
 const express = require('express');
 require('./db/mongoose');
-
 //Routers 
 const userRouter = require('./router/user');
-
-
+const productRouter = require('./router/product');
+const validator = require('validator');
 // express port config
 const app = express();
 
@@ -17,5 +16,6 @@ app.all('*', function (req, res, next) {
   next()
 })
 app.use(userRouter);
+app.use(productRouter);
 
 module.exports = app;
