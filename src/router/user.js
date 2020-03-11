@@ -44,4 +44,10 @@ router.get('/users/:id/avatar', userController.getUserPicture);
 // delete the profile picture
 router.delete('/users/me/avatar', auth, userController.deleteUserPicture);
 
+// Get the user cart
+router.get('/users/me/myCart', auth, userController.getMyCart);
+
+//Delete cart item
+router.delete('/users/me/myCart/delete/:cartItemId', auth, userController.deleteCartItem);
+
 module.exports = router;

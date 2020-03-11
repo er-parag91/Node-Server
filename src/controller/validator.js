@@ -146,7 +146,9 @@ exports.productValidation = productData => {
           }
           break;
         case 'adminApproved':
-          throw new Error('You are not allowed to change product approval status.')
+          throw new Error('You are not allowed to change product approval status.');
+        case 'like':
+          throw new Error('You are not allowed to change product likes count.')
       }
     }
   } catch (e) {

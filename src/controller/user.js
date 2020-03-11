@@ -29,9 +29,17 @@ exports.signup = (req, res, next) => {
       })
       .then(token => {
         // sendWelcomeEmail(user.email, user.firstName);
+        const userObject = {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          token,
+        }
+        let cartQuantity = 0;
+        user.cart.items.forEach(item => cartQuantity += item.quantity);
+        userObject.cartQuantity = cartQuantity;
         return res.status(201).send({
-          user,
-          token
+          userObject,
         });
       })
       .catch(err => {
@@ -60,6 +68,7 @@ exports.userLogin = (req, res) => {
     User.findOne({
         email
       })
+      .select('cart firstName lastName email password tokens')
       .then(foundUser => {
         if (!foundUser) {
           return res.status(400).send('Invalid Credentials. Please try again!');
@@ -74,9 +83,17 @@ exports.userLogin = (req, res) => {
         return user.generateAuthToken();
       })
       .then(token => {
+        const userObject = {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          token,
+        }
+        let cartQuantity = 0;
+        user.cart.items.forEach(item => cartQuantity += item.quantity);
+        userObject.cartQuantity = cartQuantity;
         return res.status(200).send({
-          user,
-          token
+          userObject,
         });
       })
       .catch((e) => {
@@ -112,13 +129,18 @@ exports.userForgotPassword = async (req, res) => {
   }
 }
 
-exports.logoutUser = async (req, res) => {
+exports.logoutUser = (req, res) => {
   try {
     req.user.tokens = req.user.tokens.filter((token) => {
       return token.token !== req.token;
     });
-    await req.user.save();
-    res.send();
+    req.user.save()
+      .then(result => {
+        res.status(200).send();
+      })
+      .catch(err => {
+        return res.status(400).send('Something went wrong on our server! Please try again!');
+      })
   } catch (e) {
     res.status(500).send();
   }
@@ -214,3 +236,61 @@ exports.pictureUpload = multer({
     cb(undefined, true);
   }
 });
+
+exports.getMyCart = (req, res, next) => {
+  try {
+    User.findById(req.user._id)
+    .select('cart')
+    .populate('cart.items.productId', 'productName productPrice productDiscountedPrice')
+    .then(result => {
+      if (!result.cart.items) {
+        throw new Error('Failed to fetch cart items. Try Again.')
+      }
+      res.status(200).send(result.cart.items);
+    })
+    .catch(err => {
+      return res.status(400).send('Something went wrong on our server! Please try again!');
+    })
+  } catch(e) {
+    if (e.message) {
+      return res.status(401).send(e.message);
+    }
+    return res.status(400).send('Something went wrong on our server! Please try again!');
+  }
+}
+
+exports.deleteCartItem = (req, res, next) => {
+  try {
+    const userCart = req.user.cart.items;
+    const newCart = userCart.filter(item => {
+      return item._id.toString() !== req.params.cartItemId
+    })
+    if (newCart.length !== userCart.length) {
+      req.user.cart.items = newCart;
+      req.user.save()
+      .then(result => {
+        return result;
+      })
+      .then(result => {
+        result
+          .populate('cart.items.productId', 'productName productPrice productDiscountedPrice')
+          .execPopulate()
+          .then((response) =>{
+            let cartQuantity = 0;
+            response.cart.items.forEach(item => cartQuantity += item.quantity);
+            res.status(200).send({items: response.cart.items, cartQuantity })
+          });
+      })
+      .catch(err => {
+        return res.status(400).send('Something went wrong on our server! Please try again!')
+      })
+    } else {
+      throw new Error('Cart Item not found. You may tried to delete cart item which deleted already.')
+    }
+  } catch(e) {
+    if (e.message) {
+      return res.status(401).send(e.message);
+    }
+    return res.status(400).send('Something went wrong on our server! Please try again!');
+  }
+}

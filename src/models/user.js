@@ -57,6 +57,19 @@ const userSchema = new mongoose.Schema({
     }],
     avatar: {
         type: Buffer
+    },
+    cart: {
+        items: [{
+            productId: {
+                type: mongoose.Types.ObjectId,
+                ref: 'Product',
+                required: true,
+            },
+            quantity: {
+                type: Number,
+                required: true,
+            }
+        }]
     }
 }, {
     timestamps: true
@@ -75,6 +88,7 @@ userSchema.methods.generateAuthToken = async function () {
         await user.save();
         return token;
     } catch(e) {
+        console.log(e);
         throw new Error('Error occured while signing user token! Please try again');
     }
 }

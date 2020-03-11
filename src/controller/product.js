@@ -88,6 +88,8 @@ exports.getMyProducts = (req, res, next) => {
   return Product.find({
       createdBy: req.user._id
     })
+    .select('-productDescription -productSizes -productColors -productCategory -productWarnings -productBuyingFrequency')
+    .populate('createdBy', 'firstName lastName')
     .then(result => {
       return res.status(200).send(result);
     })
@@ -102,7 +104,6 @@ exports.getRequestedProduct = (req, res, next) => {
         createdBy: req.user._id,
         _id: req.params.productId
       })
-      .select('-createdBy -like')
       .then(result => {
         result.productImage = '';
         return res.status(200).send(result);

@@ -13,7 +13,7 @@ const auth = async (req, res, next) => {
         req.user = user;
         next();
     } catch(e) {
-        res.status(401).send('You are not allowed to access requested resouce!');
+        res.status(401).send('Unauthenticated access to requested resource is prohibited!');
     }
 }
 
