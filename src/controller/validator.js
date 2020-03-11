@@ -56,6 +56,7 @@ exports.signUpValidation = signUpObject => {
 }
 
 exports.productValidation = productData => {
+  console.log(productData);
   try {
     for (let i = 0; i < Object.keys(productData).length; i++) {
       const key = Object.keys(productData)[i];
@@ -109,7 +110,7 @@ exports.productValidation = productData => {
           }
           break;
         case 'productCategory':
-          if (!validator.isIn(productData[key], ['Featured', 'Men', 'Women', 'Boys', 'Girls', 'Baby', 'Personal Care', 'Accessories', 'Electronics', 'Food'])) {
+          if (!validator.isIn(productData[key], ['featured', 'men', 'women', 'boys', 'girls', 'baby', 'personalCare', 'accessories', 'electronics', 'food'])) {
             throw new Error('Selected Product Category is not valid');
           }
           if (filter.isProfane(productData[key])) {

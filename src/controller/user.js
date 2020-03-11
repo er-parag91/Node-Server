@@ -57,7 +57,23 @@ exports.signup = (req, res, next) => {
 };
 
 exports.getUser = async (req, res, next) => {
-  return res.send(req.user);
+  try {
+    const user = {
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      email: req.user.email,
+      phone: req.user.phone,
+      state: req.user.state,
+      updatedAt: req.user.updatedAt,
+      createdAt: req.user.createdAt,
+    }
+    return res.send({...user});
+  } catch(e) {
+    if (e.message) {
+      return res.status(401).send(e.message);
+    }
+    return res.status(400).send('Something went wrong on our server! Please try again!');
+  }
 }
 
 exports.userLogin = (req, res) => {

@@ -68,6 +68,9 @@ exports.updateProduct = (req, res, next) => {
         product.productStock = productData.productStock;
         product.productWarnings = productData.productWarnings;
         product.productBuyingFrequency = productData.productBuyingFrequency;
+        if (productData.productImage) {
+          product.productImage = productData.productImage;
+        }
         return product.save()
       })
       .then((result) => {
@@ -104,12 +107,13 @@ exports.getRequestedProduct = (req, res, next) => {
         createdBy: req.user._id,
         _id: req.params.productId
       })
+      .select('-like')
       .then(result => {
         result.productImage = '';
         return res.status(200).send(result);
       })
       .catch(err => {
-        return res.status(400).send('Something went wrong. Can not find your products');
+        return res.status(400).send('Something went wrong. Can not find your product');
       });
   } else {
     res.status(401).send('You are not allowed to access requested resouce!');
